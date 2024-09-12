@@ -16,6 +16,7 @@ import (
 type ClitPara struct {
 	to       string
 	msg      string
+	query    string
 	password string
 	config   string
 	version  bool
@@ -44,6 +45,8 @@ func init() {
 		"v", false, "bmailCli.lnx -v")
 	flags.StringVarP(&param.to, "to",
 		"t", "", "bmailCli.lnx -t ")
+	flags.StringVarP(&param.query, "query",
+		"q", "", "bmailCli.lnx -q ")
 	flags.StringVarP(&param.msg, "message",
 		"m", "", "bmailCli.lnx -m")
 	flags.StringVarP(&param.password, "password",
@@ -70,7 +73,26 @@ type SdkResult struct {
 	EncryptedMsg string            `json:"encrypted_msg"`
 }
 
-var api = "/encrypt_mail"
+var sendApi = "/encrypt_mail"
+var queryApi = "/query_account"
+
+func processReq(req *SdkParam, api string) *SdkResult {
+	reqData, _ := json.Marshal(req)
+
+	respData, err := doHttp(_cliCfg.Server+api, "application/json", reqData)
+	if err != nil {
+		fmt.Println("failed to encrypt mail data:", err)
+		return nil
+	}
+	var result = &SdkResult{}
+	err = json.Unmarshal(respData, result)
+	if err != nil {
+		fmt.Println("failed to encrypt mail data:", err)
+		return nil
+	}
+
+	return result
+}
 
 func mainRun(_ *cobra.Command, _ []string) {
 	if param.version {
@@ -79,36 +101,36 @@ func mainRun(_ *cobra.Command, _ []string) {
 	}
 
 	InitConfig(param.config)
-	receivers := strings.Split(param.to, ",")
+	var receivers []string
+	var req *SdkParam
 	if param.simple {
+		receivers = strings.Split(param.to, ",")
 		fmt.Println("result:=>", sendEmail(receivers, param.msg))
 		return
-	}
-	req := &SdkParam{
-		Emails: strings.Split(param.to, ","),
-		Msg:    param.msg,
-	}
-	reqData, _ := json.Marshal(req)
+	} else if len(param.query) > 0 {
+		req = &SdkParam{
+			Emails: strings.Split(param.query, ","),
+		}
+		result := processReq(req, queryApi)
+		if !result.Success {
+			fmt.Println("failed to encrypt mail data:=>", result.EncryptedMsg)
+			return
+		}
+		fmt.Println("according bmail address=>", result.BMail)
+	} else if len(param.to) > 0 {
+		receivers = strings.Split(param.to, ",")
+		req = &SdkParam{
+			Emails: strings.Split(param.to, ","),
+			Msg:    param.msg,
+		}
+		result := processReq(req, sendApi)
+		if !result.Success {
+			fmt.Println("failed to encrypt mail data:=>", result.EncryptedMsg)
+			return
+		}
 
-	respData, err := doHttp(_cliCfg.Server+api, "application/json", reqData)
-	if err != nil {
-		fmt.Println("failed to encrypt mail data:", err)
-		return
+		_ = sendEmail(receivers, result.EncryptedMsg)
 	}
-	var result = &SdkResult{}
-	err = json.Unmarshal(respData, result)
-	if err != nil {
-		fmt.Println("failed to encrypt mail data:", err)
-		return
-	}
-
-	if !result.Success {
-		fmt.Println("failed to encrypt mail data:=>", result.EncryptedMsg)
-		return
-	}
-
-	fmt.Println("according bmail address=>", result.BMail)
-	_ = sendEmail(receivers, result.EncryptedMsg)
 }
 
 func sendEmail(tos []string, body string) error {
@@ -118,11 +140,8 @@ func sendEmail(tos []string, body string) error {
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", senderEmail)
-	for _, to := range tos {
-		m.SetHeader("To", to)
-	}
-
-	m.SetHeader("Subject", "Test Email from Go")
+	m.SetHeader("To", tos...)
+	m.SetHeader("Subject", "BMail系统验证码")
 	m.SetBody("text/plain", body)
 
 	d := gomail.NewDialer(smtpHost, smtpPort, senderEmail, _cliCfg.SenderPassword)
