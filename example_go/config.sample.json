@@ -1,0 +1,6 @@
+{
+	"smtp_host": "smtp.163.com",
+	"smtp_port": 465,
+	"sender_email": "ribencong@163.com",
+	"sender_password": "[PASSWORD]"
+}
