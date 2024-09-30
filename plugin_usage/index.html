@@ -43,9 +43,12 @@
                 document.getElementById("bmail-output").innerText = "bmail 对象未定义";
                 return false;
             }
-
+            window.bmail.onEmailQuery = queryCurrentEmail;
             console.log("------>>> current bmail version:", __localBmailObj.version);
             return true;
+        }
+        function  queryCurrentEmail(){
+            return "ribencong@gmail.com"
         }
     </script>
 
