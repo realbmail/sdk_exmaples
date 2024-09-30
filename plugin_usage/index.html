@@ -5,37 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>简单的HTTP服务</title>
     <script>
-        // 在页面加载时执行
-        window.onload = function() {
-            // 读取window对象的bmail属性
-            if (window.bmail) {
-                console.log("bmail对象:", window.bmail);
-                document.getElementById("bmail-output").innerText = "bmail: " + JSON.stringify(window.bmail);
+        let __localBmailObj = null;
+
+        // 确保页面加载完成后检查 bmail 对象
+        window.onload = async function () {
+            if (!await checkBmailObj()) {
+                document.getElementById("bmail-output").innerText = "bmail 对象未定义";
             } else {
-                document.getElementById("bmail-output").innerText = "bmail对象未定义";
+                console.log("bmail 对象已准备好");
+            }
+        }
+
+        // 异步函数以支持 await
+        async function openPlugin() {
+            if (!await checkBmailObj()) {
+                return;
             }
 
-            if (window.dessage) {
-                console.log("dessage:", window.dessage);
-                document.getElementById("dessage-output").innerText = "dessage: " + JSON.stringify(window.dessage);
-            } else {
-                document.getElementById("dessage-output").innerText = "dessage对象未定义";
+            try {
+                const result = await __localBmailObj.connect();
+                console.log("-------->>> result", result);
+            } catch (error) {
+                if (error.code === -1) {
+                    console.log("------>>> need open the wallet first", error.message);
+                    return;
+                }
+                alert("login failed: error code "+error.code+" message:"+error.message);
+            }
+        }
+
+        // 检查 bmail 对象是否存在
+        async function checkBmailObj() {
+            __localBmailObj = window.bmail;
+
+            // 等待 window.bmail 对象被注入
+            if (!__localBmailObj) {
+                document.getElementById("bmail-output").innerText = "bmail 对象未定义";
+                return false;
             }
 
-            if (window.nostr) {
-                console.log("nostr:", window.nostr);
-                document.getElementById("nostr-output").innerText = "nostr: " + JSON.stringify(window.nostr);
-            } else {
-                document.getElementById("nostr-output").innerText = "nostr对象未定义";
-            }
-        };
+            console.log("------>>> current bmail version:", __localBmailObj.version);
+            return true;
+        }
     </script>
+
 </head>
 <body>
 <h1>欢迎来到我的简单HTTP服务!</h1>
 <p>这是一个简单的index.html页面。</p>
 <p id="bmail-output"></p>
-<p id="dessage-output"></p>
-<p id="nostr-output"></p>
+<button onclick="openPlugin()">login</button>
 </body>
 </html>
