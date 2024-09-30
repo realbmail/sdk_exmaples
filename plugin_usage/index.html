@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单的HTTP服务</title>
+    <script>
+        // 在页面加载时执行
+        window.onload = function() {
+            // 读取window对象的bmail属性
+            if (window.bmail) {
+                console.log("bmail对象:", window.bmail);
+                document.getElementById("bmail-output").innerText = "bmail: " + JSON.stringify(window.bmail);
+            } else {
+                document.getElementById("bmail-output").innerText = "bmail对象未定义";
+            }
+
+            if (window.dessage) {
+                console.log("dessage:", window.dessage);
+                document.getElementById("dessage-output").innerText = "dessage: " + JSON.stringify(window.dessage);
+            } else {
+                document.getElementById("dessage-output").innerText = "dessage对象未定义";
+            }
+
+            if (window.nostr) {
+                console.log("nostr:", window.nostr);
+                document.getElementById("nostr-output").innerText = "nostr: " + JSON.stringify(window.nostr);
+            } else {
+                document.getElementById("nostr-output").innerText = "nostr对象未定义";
+            }
+        };
+    </script>
+</head>
+<body>
+<h1>欢迎来到我的简单HTTP服务!</h1>
+<p>这是一个简单的index.html页面。</p>
+<p id="bmail-output"></p>
+<p id="dessage-output"></p>
+<p id="nostr-output"></p>
+</body>
+</html>
