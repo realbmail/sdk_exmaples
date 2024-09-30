@@ -25,6 +25,8 @@
             try {
                 const result = await __localBmailObj.connect();
                 console.log("-------->>> result", result);
+                document.getElementById("bmail-address").innerText = result;
+
             } catch (error) {
                 if (error.code === -1) {
                     console.log("------>>> need open the wallet first", error.message);
@@ -45,18 +47,25 @@
             }
             window.bmail.onEmailQuery = queryCurrentEmail;
             console.log("------>>> current bmail version:", __localBmailObj.version);
+
             return true;
         }
         function  queryCurrentEmail(){
             return "ribencong@gmail.com"
         }
+
+
     </script>
 
 </head>
 <body>
 <h1>欢迎来到我的简单HTTP服务!</h1>
 <p>这是一个简单的index.html页面。</p>
+
 <p id="bmail-output"></p>
+<p>
+    <span>当前区块链地址:</span><span id="bmail-address"></span>
+</p>
 <button onclick="openPlugin()">login</button>
 </body>
 </html>
