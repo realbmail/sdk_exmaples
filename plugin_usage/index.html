@@ -32,7 +32,7 @@
                     console.log("------>>> need open the wallet first", error.message);
                     return;
                 }
-                alert("login failed: error code "+error.code+" message:"+error.message);
+                alert("login failed: error code " + error.code + " message:" + error.message);
             }
         }
 
@@ -50,11 +50,42 @@
 
             return true;
         }
-        function  queryCurrentEmail(){
+
+        function queryCurrentEmail() {
             return "ribencong@gmail.com"
         }
 
+        async function encryptedData() {
+            const txtDiv = document.getElementById("plain-text-area");
+            if (txtDiv.textContent.length <= 0) {
+                return;
+            }
+            try {
+                let receiver = ['ribencong@163.com', 'ribencong@outlook.com'];
+                const encryptedTxt = await window.bmail.encryptMailTxt(receiver, txtDiv.innerHTML);
+                console.log("------>>> encrypted text:", encryptedTxt);
+                document.getElementById("cipher-text-area").innerText = encryptedTxt;
+            } catch (e) {
+                console.log("------------->>>>> err:", e);
+            }
 
+        }
+
+        const MailFlag = "0be465716ad37c9119253196f921e677";
+
+        async function decryptedData() {
+            const contentDiv = document.getElementById("cipher-text-area");
+            if (!contentDiv.textContent.includes(MailFlag)) {
+                console.log("this is not valid bmail content")
+                return;
+            }
+            try {
+                contentDiv.textContent = await window.bmail.decryptMailTxt(contentDiv.textContent)
+            } catch (e) {
+                console.log("------------->>>>> err:", e);
+
+            }
+        }
     </script>
 
 </head>
@@ -66,6 +97,21 @@
 <p>
     <span>当前区块链地址:</span><span id="bmail-address"></span>
 </p>
-<button onclick="openPlugin()">login</button>
+<button onclick="openPlugin()">登陆</button>
+
+<div>
+    <div contenteditable="true" style="height: 200px; width: auto;background: beige;" id="plain-text-area">
+    </div>
+    <p>
+        <button onclick="encryptedData()">加密</button>
+    </p>
+    <div>
+        <div id="cipher-text-area" style="height:200px;width: auto; background: aquamarine">
+        </div>
+        <p>
+            <button onclick="decryptedData()">解密</button>
+        </p>
+    </div>
+</div>
 </body>
 </html>
